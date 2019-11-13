@@ -1,5 +1,3 @@
-from __future__ import division, print_function
-# coding=utf-8
 import sys
 import os
 import glob
@@ -8,80 +6,93 @@ import numpy as np
 
 # Keras
 from keras.applications.imagenet_utils import preprocess_input, decode_predictions
-from keras.models import load_model
+from keras.models import load_model, model_from_json
 from keras.preprocessing import image
 
+# Tensorflow
+from tensorflow import Graph, Session
+
 # Flask utils
-from flask import Flask, redirect, url_for, request, render_template
+from flask import Flask, redirect, url_for, request, render_template, send_from_directory, jsonify
+from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from gevent.pywsgi import WSGIServer
 
-# Define a flask app
-app = Flask(__name__)
 
-# Model saved with Keras model.save()
-MODEL_PATH = 'models/your_model.h5'
+app = Flask(__name__, template_folder='frontend', static_folder='frontend', static_url_path='')
+CORS(app)
 
-# Load your trained model
-# model = load_model(MODEL_PATH)
-# model._make_predict_function()          # Necessary
-# print('Model loaded. Start serving...')
+MODEL_NAMES = ["A", "B", "C"]
+AMOUNT_OF_MODELS = len(MODEL_NAMES)
+MODELS = []
+GRAPHS = []
+SESSIONS = []
 
-# You can also use pretrained model from Keras
-# Check https://keras.io/applications/
-from keras.applications.resnet50 import ResNet50
-model = ResNet50(weights='imagenet')
-print('Model loaded. Check http://127.0.0.1:5000/')
+def load_models():
+    for i in range(AMOUNT_OF_MODELS):
+        load_single_model("models/" + MODEL_NAMES[i] + ".h5")
+        print("Model " + str(i) + " of "+ AMOUNT_OF_MODELS + " loaded.")
+    print('Ready to go! Visit -> http://127.0.0.1:5000/')   
 
 
-def model_predict(img_path, model):
+def load_single_model(path):
+    graph = Graph()
+    with graph.as_default():
+        session = Session()
+        with session.as_default():
+            model = load_model(path)
+            model._make_predict_function() 
+            
+            MODELS.append(model)
+            GRAPHS.append(graph)
+            SESSIONS.append(session)
+
+
+def models_predict(img_path):
     img = image.load_img(img_path, target_size=(224, 224))
 
-    # Preprocessing the image
     x = image.img_to_array(img)
-    # x = np.true_divide(x, 255)
     x = np.expand_dims(x, axis=0)
 
-    # Be careful how your trained model deals with the input
-    # otherwise, it won't make correct prediction!
-    x = preprocess_input(x, mode='caffe')
+    preds = []
 
-    preds = model.predict(x)
+    for i in range(AMOUNT_OF_MODELS):
+        with GRAPHS[i].as_default():
+            with SESSIONS[i].as_default():
+                numeric_prediction = MODELS[i].predict(x)
+                binary_prediction = 0
+
+                if numeric_prediction > 0.5:
+                    binary_prediction = 1
+
+                preds.append(binary_prediction)
     return preds
 
 
 @app.route('/', methods=['GET'])
 def index():
-    # Main page
     return render_template('index.html')
 
 
 @app.route('/predict', methods=['GET', 'POST'])
 def upload():
     if request.method == 'POST':
-        # Get the file from post request
-        f = request.files['image']
+        # Get the file from the POST request
+        f = request.files['file']
 
         # Save the file to ./uploads
         basepath = os.path.dirname(__file__)
-        file_path = os.path.join(
+        img_path = os.path.join(
             basepath, 'uploads', secure_filename(f.filename))
-        f.save(file_path)
+        f.save(img_path)
 
-        # Make prediction
-        preds = model_predict(file_path, model)
+        preds = models_predict(img_path)
+        os.remove(img_path)
 
-        # Process your result for human
-        # pred_class = preds.argmax(axis=-1)            # Simple argmax
-        pred_class = decode_predictions(preds, top=1)   # ImageNet Decode
-        result = str(pred_class[0][0][1])               # Convert to string
-        return result
-    return None
+        return jsonify(preds)   
 
 
 if __name__ == '__main__':
-    # app.run(port=5002, debug=True)
-
-    # Serve the app with gevent
+    load_models()
     http_server = WSGIServer(('0.0.0.0', 5000), app)
     http_server.serve_forever()

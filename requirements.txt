@@ -1,5 +1,6 @@
 Werkzeug
 Flask
+flask-cors
 numpy
 Keras
 gevent
