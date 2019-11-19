@@ -1,11 +1,21 @@
-FROM python:2.7.16-slim-stretch
+FROM python:3
 
-COPY . /usr/src/app
+WORKDIR /usr/src/app/uploads
+
 WORKDIR /usr/src/app
 
-RUN pip install Werkzeug Flask numpy Keras gevent pillow h5py tensorflow
+RUN pip install Werkzeug Flask flask-cors numpy Keras gevent pillow h5py tensorflow
 
+WORKDIR /usr/src/app/models
 
-EXPOSE 5000
+COPY models .
+
+WORKDIR /usr/src/app/frontend
+
+COPY frontend .
+
+WORKDIR /usr/src/app
+
+COPY app.py .
+
 CMD [ "python" , "app.py"]
-

@@ -1,0 +1,17 @@
+version: '3.3'
+services:
+ deploy-keras-easily:
+   container_name: deploy-keras-easily
+   image: deploy-keras-easily
+   restart: always
+   networks:
+     deploy-keras-easily-net:
+       ipv4_address: 172.16.239.10
+
+networks:
+ deploy-keras-easily-net:
+   driver: bridge
+   ipam:
+     driver: default
+     config:
+       - subnet: 172.16.239.0/24
