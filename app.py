@@ -48,8 +48,8 @@ def load_single_model(path):
             SESSIONS.append(session)
 
 
-def models_predict(img_path):
-    img = image.load_img(img_path, target_size=(224, 224))
+def models_predict(file_path):
+    img = image.load_img(file_path, target_size=(224, 224))
 
     x = image.img_to_array(img)
     x = np.expand_dims(x, axis=0)
@@ -74,25 +74,25 @@ def index():
     return render_template('index.html')
 
 
-@app.route('/predict', methods=['GET', 'POST'])
+@app.route('/predict', methods=['POST'])
 def upload():
     if request.method == 'POST':
         # Get the file from the POST request
-        f = request.files['file']
+        file_to_predict = request.files['file']
 
         # Save the file to ./uploads
         basepath = os.path.dirname(__file__)
-        img_path = os.path.join(
-            basepath, 'uploads', secure_filename(f.filename))
-        f.save(img_path)
+        local_file_path = os.path.join(
+            basepath, 'uploads', secure_filename(file_to_predict.filename))
+        file_to_predict.save(local_file_path)
 
-        preds = models_predict(img_path)
-        os.remove(img_path)
+        preds = models_predict(local_file_path)
+        os.remove(local_file_path)
 
         return jsonify(preds)   
 
 
 if __name__ == '__main__':
     load_models()
-    http_server = WSGIServer(('0.0.0.0', 5000), app)
-    http_server.serve_forever()
+    wsgi_server = WSGIServer(('0.0.0.0', 5000), app)
+    wsgi_server.serve_forever()
