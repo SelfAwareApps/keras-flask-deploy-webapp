@@ -22,7 +22,10 @@ from gevent.pywsgi import WSGIServer
 app = Flask(__name__, template_folder='frontend', static_folder='frontend', static_url_path='')
 CORS(app)
 
-MODEL_NAMES = ["A", "B", "C"]
+# These models are only for demonstration purposes and will serve "random" values
+# You might as well use pretrained models from Keras - check https://keras.io/applications/
+# Make sure to give your models meaningful names 
+MODEL_NAMES = ["test-model", "test-model", "test-model"]
 AMOUNT_OF_MODELS = len(MODEL_NAMES)
 MODELS = []
 GRAPHS = []
@@ -34,7 +37,7 @@ def load_models():
         print("\nModel ", str(i+1), " of ",  AMOUNT_OF_MODELS, " loaded.")
     print('Ready to go! Visit -> http://127.0.0.1:5000/')   
 
-
+# Thanks to all participants who contributed at https://github.com/keras-team/keras/issues/8538
 def load_single_model(path):
     graph = Graph()
     with graph.as_default():
@@ -49,7 +52,8 @@ def load_single_model(path):
 
 
 def models_predict(file_path):
-    img = image.load_img(file_path, target_size=(224, 224))
+    # Beware to adapt the preprocessing to the input of your trained models
+    img = image.load_img(file_path, target_size=(64, 64))
 
     x = image.img_to_array(img)
     x = np.expand_dims(x, axis=0)
@@ -60,6 +64,8 @@ def models_predict(file_path):
         with GRAPHS[i].as_default():
             with SESSIONS[i].as_default():
                 numeric_prediction = MODELS[i].predict(x)
+
+                # Adapt the prediction format to your models output
                 binary_prediction = 0
 
                 if numeric_prediction > 0.5:
