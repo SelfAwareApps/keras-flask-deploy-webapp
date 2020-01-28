@@ -1,11 +1,10 @@
-# Deploy Keras Model with Flask as Web App in 10 Minutes
+# Deploy Keras models to production level easily
 
-[![](https://img.shields.io/badge/python-2.7%2C%203.5%2B-green.svg)]()
+[![](https://img.shields.io/badge/python-3.5%2B-green.svg)]()
 [![GPLv3 license](https://img.shields.io/badge/License-GPLv3-blue.svg)](http://perso.crans.org/besson/LICENSE.html)
 
-> A pretty and customizable web app to deploy your DL model with ease
+Make use of Flask & Gevent to deploy your DL models with ease.
 
-------------------
 
 ## Getting started in 10 minutes
 
@@ -18,40 +17,16 @@
 :point_down:Screenshot:
 
 <p align="center">
-  <img src="https://s18.postimg.cc/l01x6fn3d/demo1.png" width="600px" alt="">
+  <img src="demo.gif" width="600px" alt="Code demo">
 </p>
 
 ------------------
-
-## Docker Installation
-
-### Build and run an image for keras-application pretrained model 
-```shell
-$ cd keras-flask-deploy-webapp
-$ docker build -t keras_flask_app .
-$ docker run -d -p 5000:5000 keras_flask_app 
-```
-
-### Build and run an image from your model into the containeri.
-After build an image as above, and 
-```shell
-$ docker run -e MODEL_PATH=/mnt/models/your_model.h5  -v volume-name:/mnt/models -p 5000:5000 keras_flask_app
-```
-
-### Pull an built-image from Docker hub
-For your convenience, can just pull the image instead of building it. 
-```shell
-$ docker pull physhik/keras-flask-app:2 
-$ docker run -d -p 5000:5000 physhik/keras-flask-app:2
-```
-Open http://localhost:5000 after waiting for a minute to install in the container.
-
 
 ## Local Installation
 
 ### Clone the repo
 ```shell
-$ git clone https://github.com/mtobeiyf/keras-flask-deploy-webapp.git
+$ git clone https://github.com/s-gbz/keras-flask-deploy-webapp.git
 ```
 
 ### Install requirements
@@ -83,63 +58,6 @@ Open http://localhost:5000 and have fun. :smiley:
 <p align="center">
   <img src="https://s18.postimg.cc/5ekln1vvt/demo2.gif" width="600px" alt="">
 </p>
-
-------------------
-
-## Customization
-
-### Use your own model
-
-Place your trained `.h5` file saved by `model.save()` under models directory.
-
-Check the [commented code](https://github.com/mtobeiyf/keras-flask-deploy-webapp/blob/master/app.py#L25) in app.py.
-
-
-### Use other pre-trained model
-
-See [Keras applications](https://keras.io/applications/) for more available models such as DenseNet, MobilNet, NASNet, etc.
-
-Check [this section](https://github.com/mtobeiyf/keras-flask-deploy-webapp/blob/master/app.py#L25) in app.py.
-
-### UI Modification
-
-Modify files in `templates` and `static` directory.
-
-`index.html` for the UI and `main.js` for all the behaviors
-
-## Deployment
-
-To deploy it for public use, you need to have a public **linux server**.
-
-### Run the app
-
-Run the script and hide it in background with `tmux` or `screen`.
-```
-$ python app.py
-```
-
-You can also use gunicorn instead of gevent
-```
-$ gunicorn -b 127.0.0.1:5000 app:app
-```
-
-More deployment options, check [here](http://flask.pocoo.org/docs/0.12/deploying/wsgi-standalone/)
-
-### Set up Nginx
-
-To redirect the traffic to your local app.
-Configure your Nginx `.conf` file.
-```
-server {
-    listen  80;
-
-    client_max_body_size 20M;
-
-    location / {
-        proxy_pass http://127.0.0.1:5000;
-    }
-}
-```
 
 ## More resources
 
