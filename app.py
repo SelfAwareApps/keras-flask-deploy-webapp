@@ -31,7 +31,7 @@ SESSIONS = []
 def load_models():
     for i in range(AMOUNT_OF_MODELS):
         load_single_model("models/" + MODEL_NAMES[i] + ".h5")
-        print("Model " + str(i) + " of "+ AMOUNT_OF_MODELS + " loaded.")
+        print("\nModel ", str(i+1), " of ",  AMOUNT_OF_MODELS, " loaded.")
     print('Ready to go! Visit -> http://127.0.0.1:5000/')   
 
 
@@ -77,19 +77,20 @@ def index():
 @app.route('/predict', methods=['POST'])
 def upload():
     if request.method == 'POST':
-        # Get the file from the POST request
-        file_to_predict = request.files['file']
+        # Get the image from the POST request
+        image_to_predict = request.files['image']
 
-        # Save the file to ./uploads
+        # Save the image to ./uploads
         basepath = os.path.dirname(__file__)
-        local_file_path = os.path.join(
-            basepath, 'uploads', secure_filename(file_to_predict.filename))
-        file_to_predict.save(local_file_path)
+        local_image_path = os.path.join(
+            basepath, 'uploads', secure_filename(image_to_predict.filename))
+        image_to_predict.save(local_image_path)
 
-        preds = models_predict(local_file_path)
-        os.remove(local_file_path)
+        predictions = models_predict(local_image_path)
+        # Remove image after prediction is done
+        os.remove(local_image_path)
 
-        return jsonify(preds)   
+        return jsonify(predictions)   
 
 
 if __name__ == '__main__':
