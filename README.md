@@ -4,7 +4,7 @@
 [![GPLv3 license](https://img.shields.io/badge/License-GPLv3-blue.svg)](http://perso.crans.org/besson/LICENSE.html)
 
 Make use of Flask & Gevent to deploy your DL models with ease.
-
+Checkout my [blogpost](https://www.adesso.de/de/news/blog/deploy-keras-models-to-production-level-easily.jsp) for further details on the topic! :memo::newspaper::bulb:
 
 ## Getting started in 10 minutes
 
